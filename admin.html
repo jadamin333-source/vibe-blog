@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 로그인 | J.Doe Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Inter:wght@200;300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050505;
+            color: #f5f5f5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .font-serif {
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        /* 배경 그라디언트 애니메이션 */
+        .bg-glow {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%);
+            pointer-events: none;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* 인풋 스타일 */
+        .admin-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid #333;
+            padding: 12px 0;
+            color: #f5f5f5;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 300;
+            outline: none;
+            transition: border-color 0.3s ease;
+            letter-spacing: 0.05em;
+        }
+
+        .admin-input::placeholder {
+            color: #444;
+        }
+
+        .admin-input:focus {
+            border-bottom-color: #888;
+        }
+
+        /* 로그인 버튼 */
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: #f5f5f5;
+            color: #050505;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .login-btn:hover {
+            background: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        /* 에러 메시지 */
+        .error-msg {
+            display: none;
+            color: #ef4444;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            margin-top: 12px;
+            text-align: center;
+        }
+
+        .error-msg.show {
+            display: block;
+        }
+
+        /* 페이드인 애니메이션 */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .fade-in-delay {
+            opacity: 0;
+            animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center relative">
+
+    <div class="bg-glow"></div>
+
+    <!-- 뒤로가기 -->
+    <a href="index.html" class="fixed top-8 left-8 text-xs text-gray-600 tracking-widest uppercase hover:text-gray-300 transition-colors flex items-center gap-2">
+        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+        </svg>
+        돌아가기
+    </a>
+
+    <!-- 로그인 박스 -->
+    <div class="w-full max-w-sm px-8 fade-in">
+
+        <!-- 로고 / 타이틀 -->
+        <div class="mb-12 text-center">
+            <p class="text-xs text-gray-600 tracking-widest uppercase mb-3">J.Doe Studio</p>
+            <h1 class="font-serif text-4xl italic text-gray-200">관리자 로그인</h1>
+        </div>
+
+        <!-- 로그인 폼 -->
+        <form id="admin-form" class="fade-in-delay" onsubmit="handleLogin(event)">
+            <div class="mb-8">
+                <label class="block text-xs text-gray-500 tracking-widest uppercase mb-3">아이디</label>
+                <input type="text" id="admin-id" class="admin-input" placeholder="아이디를 입력하세요" autocomplete="off">
+            </div>
+
+            <div class="mb-10">
+                <label class="block text-xs text-gray-500 tracking-widest uppercase mb-3">비밀번호</label>
+                <input type="password" id="admin-pw" class="admin-input" placeholder="비밀번호를 입력하세요">
+            </div>
+
+            <button type="submit" class="login-btn">로그인</button>
+
+            <p id="error-msg" class="error-msg">아이디 또는 비밀번호가 올바르지 않습니다.</p>
+        </form>
+
+    </div>
+
+    <script>
+        // 관리자 계정 (실제 운영 시에는 서버 인증으로 교체하세요)
+        const ADMIN_ID = 'admin';
+        const ADMIN_PW = '1234';
+
+        function handleLogin(e) {
+            e.preventDefault();
+
+            const id = document.getElementById('admin-id').value.trim();
+            const pw = document.getElementById('admin-pw').value.trim();
+            const errorMsg = document.getElementById('error-msg');
+
+            if (id === ADMIN_ID && pw === ADMIN_PW) {
+                // 로그인 성공
+                errorMsg.classList.remove('show');
+                sessionStorage.setItem('admin_logged_in', 'true');
+                // 관리자 대시보드 페이지가 있으면 이동, 없으면 index로
+                window.location.href = 'index.html';
+            } else {
+                // 로그인 실패
+                errorMsg.classList.add('show');
+                document.getElementById('admin-pw').value = '';
+                document.getElementById('admin-pw').focus();
+            }
+        }
+    </script>
+</body>
+
+</html>

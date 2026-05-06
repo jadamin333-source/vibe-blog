@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code 사양 기반 워크플로우 #4 - 계획 구현</title>
+    <meta name="description" content="AI와 함께하는 효율적인 개발 워크플로우, 계획 구현 단계의 핵심 노하우를 공유합니다.">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #8a2be2;
+            --primary-light: #b066ff;
+            --secondary: #00f2fe;
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #ff00c8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(138, 43, 226, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 242, 254, 0.1) 0%, transparent 40%);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 16px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
+        }
+
+        h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .meta {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        /* Content Card */
+        .content-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        .intro {
+            font-size: 1.2rem;
+            color: var(--primary-light);
+            font-weight: 600;
+            margin-bottom: 30px;
+            border-left: 4px solid var(--primary);
+            padding-left: 20px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin: 40px 0 20px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+        }
+
+        h2::before {
+            content: '⚡';
+            margin-right: 12px;
+            font-size: 1.4rem;
+        }
+
+        p {
+            margin-bottom: 20px;
+            color: #cbd5e1;
+            font-size: 1.1rem;
+            word-break: keep-all;
+        }
+
+        .highlight-box {
+            background: rgba(138, 43, 226, 0.1);
+            border: 1px solid rgba(138, 43, 226, 0.2);
+            border-radius: 16px;
+            padding: 25px;
+            margin: 30px 0;
+            transition: transform 0.3s ease;
+        }
+
+        .highlight-box:hover {
+            transform: translateY(-5px);
+            background: rgba(138, 43, 226, 0.15);
+        }
+
+        .highlight-box h3 {
+            color: var(--primary-light);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        ul {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        li {
+            position: relative;
+            padding-left: 25px;
+            margin-bottom: 12px;
+            color: #cbd5e1;
+        }
+
+        li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--secondary);
+            font-weight: bold;
+        }
+
+        /* Footer Section */
+        .cta-section {
+            margin-top: 60px;
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.1), rgba(0, 242, 254, 0.1));
+            border-radius: 24px;
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 14px 32px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(138, 43, 226, 0.2);
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 30px rgba(138, 43, 226, 0.4);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 80px;
+            padding-bottom: 40px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .content-card { padding: 25px; }
+            h1 { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="badge">Antigravity Workflow Series</div>
+        <h1>Claude Code 사양 기반 워크플로우<br>#4: 계획 구현의 기술</h1>
+        <div class="meta">By Antigravity Assistant | May 6, 2026</div>
+    </header>
+
+    <main class="content-card">
+        <div class="intro">
+            AI와 함께하는 개발, 단순히 "해줘"라고만 하고 계신가요? <br>
+            오늘은 완벽한 계획을 현실로 만드는 '구현(Implementation)'의 정석을 공개합니다.
+        </div>
+
+        <p>AI 코딩의 가장 큰 함정은 '일단 코드부터 짜고 보는 것'입니다. 하지만 숙련된 시니어 개발자처럼 일하는 Claude Code 워크플로우에서는 다릅니다. 생각하는 시간과 타이핑하는 시간을 분리하는 것, 그것이 핵심입니다.</p>
+
+        <h2>실전 구현의 3가지 황금률</h2>
+
+        <div class="highlight-box">
+            <h3>1. 한 번에 하나씩, 청크(Chunk) 단위 작업</h3>
+            <p>아무리 큰 기능이라도 계획 단계에서 쪼갠 작은 단위를 하나씩 해결하세요. 첫 번째 단계를 완벽히 검증한 뒤에만 다음으로 넘어가는 것이 AI의 컨텍스트를 유지하는 비결입니다.</p>
+        </div>
+
+        <div class="highlight-box">
+            <h3>2. Plan Mode와 Execution Mode의 조화</h3>
+            <p>구현 중 예상치 못한 문제가 발생하면 억지로 코드를 고치지 마세요. 잠시 멈추고 계획을 수정(Update Plan)한 뒤 다시 구현을 재개하는 것이 훨씬 빠르고 정확합니다.</p>
+        </div>
+
+        <div class="highlight-box">
+            <h3>3. 마이크로 검증 (Real-time Validation)</h3>
+            <p>코드가 작성될 때마다 즉시 타입 체크나 린트를 실행하세요. Claude Code의 터미널 실행 능력을 활용해 매 단계마다 검증 루프를 돌리는 것이 기술 부채를 막는 유일한 길입니다.</p>
+        </div>
+
+        <h2>성공적인 구현을 위한 체크리스트</h2>
+        <ul>
+            <li>CLAUDE.md에 프로젝트 규칙이 명시되어 있는가?</li>
+            <li>현재 구현 단계가 원래의 계획과 일치하는가?</li>
+            <li>매 단계 완료 후 자동화된 테스트를 거쳤는가?</li>
+            <li>불필요한 코드 생성을 방지하기 위한 리팩토링 원칙을 지켰는가?</li>
+        </ul>
+
+        <p>AI는 당신의 주니어가 아니라 '계산 가능한 파트너'입니다. 개발자가 주도권을 가지고 단계별 승인을 이어가는 방식이야말로 AI 시대의 진정한 개발 경쟁력입니다.</p>
+
+        <section class="cta-section">
+            <h3>강의 내용이 도움이 되셨나요?</h3>
+            <p>지금 바로 이 워크플로우를 실제 프로젝트에 적용해 보세요.</p>
+            <a href="#" class="btn" id="nextStep">다음 워크플로우 보기</a>
+        </section>
+    </main>
+
+    <footer>
+        &copy; 2026 Antigravity Workshop. All rights reserved.
+    </footer>
+</div>
+
+<script>
+    // 간단한 인터랙션 추가
+    document.getElementById('nextStep').addEventListener('click', (e) => {
+        e.preventDefault();
+        alert('다음 단계인 [검증(Validation)] 포스트도 곧 준비될 예정입니다! 😊');
+    });
+</script>
+
+</body>
+</html>
