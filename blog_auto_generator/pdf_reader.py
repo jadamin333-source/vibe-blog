@@ -1,39 +1,55 @@
 import os
 import random
-import pdfplumber
+
+DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
+
+PRINCIPLES_FILE = os.path.join(DATA_DIR, "자담인건강법_핵심원칙.txt")
+TESTIMONIALS_FILE = os.path.join(DATA_DIR, "자담인_체험담.txt")
+
+# 핵심 원칙 섹션 목록
+PRINCIPLES_SECTIONS = [
+    "생명의 기원",
+    "소화력은 자동차의 연비",
+    "혈액의 질",
+    "오토파지와 아포토시스",
+    "질병의 주범",
+    "호르몬의 교란",
+    "건강식의 오해",
+    "8가지 원칙 로드맵",
+    "장청뇌청",
+]
 
 
-def extract_pdf_content(pdf_path: str) -> str:
-    """PDF에서 전체 텍스트를 추출합니다."""
-    if not os.path.exists(pdf_path):
-        raise FileNotFoundError(f"PDF 파일을 찾을 수 없습니다: {pdf_path}")
-
-    with pdfplumber.open(pdf_path) as pdf:
-        pages = pdf.pages
-        total_pages = len(pages)
-        texts = []
-        for page in pages:
-            text = page.extract_text()
-            if text:
-                texts.append(text.strip())
-
-    return "\n\n".join(texts), total_pages
+def _read_file(path: str) -> str:
+    with open(path, encoding="utf-8") as f:
+        return f.read()
 
 
-def get_random_excerpt(pdf_path: str, num_chars: int = 2000) -> str:
-    """PDF에서 랜덤 구간의 내용을 추출합니다 (매일 다른 주제 생성용)."""
-    full_text, _ = extract_pdf_content(pdf_path)
+def get_random_principle() -> str:
+    """핵심 원칙 파일에서 랜덤 섹션을 반환합니다."""
+    text = _read_file(PRINCIPLES_FILE)
+    # ■ 로 구분된 섹션을 분리
+    sections = [s.strip() for s in text.split("■") if s.strip()]
+    if not sections:
+        return text
+    return "■ " + random.choice(sections)
 
-    if len(full_text) <= num_chars:
-        return full_text
 
-    # 랜덤 시작점 (문장 단위로 끊기 위해 공백 기준)
-    max_start = len(full_text) - num_chars
-    start = random.randint(0, max_start)
+def get_random_testimonials(n: int = 2) -> str:
+    """체험담 파일에서 랜덤으로 n개의 사례를 반환합니다."""
+    text = _read_file(TESTIMONIALS_FILE)
+    stories = [s.strip() for s in text.split("■") if s.strip() and "체험담" not in s[:10]]
+    if not stories:
+        return text
+    chosen = random.sample(stories, min(n, len(stories)))
+    return "\n\n".join("■ " + s for s in chosen)
 
-    # 문장 시작점 찾기
-    while start > 0 and full_text[start] not in ". \n":
-        start -= 1
 
-    excerpt = full_text[start : start + num_chars].strip()
-    return excerpt
+def get_content_for_blog() -> dict:
+    """블로그 글 생성에 필요한 내용을 묶어서 반환합니다."""
+    principle = get_random_principle()
+    testimonials = get_random_testimonials(2)
+    return {
+        "principle": principle,
+        "testimonials": testimonials,
+    }
