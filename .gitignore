@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+blog_auto_generator/output/
+blog_auto_generator/generator.log
