@@ -15,7 +15,6 @@ from config import (
 from pdf_reader import get_content_for_blog, advance_chapter, get_current_chapter
 from youtube_fetcher import get_latest_video_content
 from blog_generator import generate_blog_post
-from image_generator import generate_blog_image
 
 logging.basicConfig(
     level=logging.INFO,
@@ -81,15 +80,7 @@ def run_once():
 
     log.info(f"파일 저장 완료: {file_path}")
 
-    # 5. 이미지 생성
-    image_prompt = chapter.get("image_prompt", "자담인 건강법, 따뜻하고 자연스러운 건강 일러스트")
-    image_generated = generate_blog_image(image_prompt, file_path)
-    if image_generated:
-        log.info("블로그 이미지 생성 완료")
-    else:
-        log.info("이미지 프롬프트 저장 완료 (STABILITY_API_KEY 설정 시 자동 생성)")
-
-    # 6. 챕터 진행 (다음 실행 때 다음 챕터 사용)
+    # 5. 챕터 진행 (다음 실행 때 다음 챕터 사용)
     next_ch = advance_chapter()
     log.info(f"다음 실행 챕터: {next_ch}편")
 
